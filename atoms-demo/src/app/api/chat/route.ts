@@ -332,10 +332,7 @@ export async function POST(req: NextRequest) {
             finalCode = {
               files,
               entryFile: (d.entryFile as string) ?? "/App.tsx",
-              setupInstructions: (d.setupInstructions as string) ?? "",
               dependencies: (d.dependencies as Record<string, string>) ?? {},
-              sqlMigration: (d.sqlMigration as string) ?? undefined,
-              apiRoutes: (d.apiRoutes as Record<string, string>) ?? undefined,
             };
           }
         }
@@ -353,22 +350,11 @@ export async function POST(req: NextRequest) {
 
           const nextVersion = (latestCode?.version ?? 0) + 1;
 
-          // 将前端代码、SQL、API路由合并存入 files JSON
-          const allFiles: Record<string, string> = { ...finalCode.files };
-          if (finalCode.sqlMigration) {
-            allFiles["/backend/migration.sql"] = finalCode.sqlMigration;
-          }
-          if (finalCode.apiRoutes) {
-            for (const [path, code] of Object.entries(finalCode.apiRoutes)) {
-              allFiles[path] = code;
-            }
-          }
-
           await supabase.from("generated_code").insert({
             project_id: projectId,
             conversation_id: convId,
             code_type: "full_app",
-            files: allFiles,
+            files: finalCode.files,
             version: nextVersion,
           });
 

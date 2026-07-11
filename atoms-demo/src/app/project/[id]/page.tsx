@@ -165,14 +165,7 @@ export default function ProjectPage({
   // ------------------------------------------------------------------
   // 构建 PreviewTabs 所需的 props
   // ------------------------------------------------------------------
-  // 合并前端代码 + 后端 SQL + API 路由，全部可查看
-  const allFiles = { ...(generatedCode?.files ?? {}) };
-  if (generatedCode?.sqlMigration) {
-    allFiles["/backend/migration.sql"] = generatedCode.sqlMigration;
-  }
-  if (generatedCode?.apiRoutes) {
-    Object.assign(allFiles, generatedCode.apiRoutes);
-  }
+  const files = generatedCode?.files ?? {};
 
   const previewProps = {
     generatedCode: generatedCode?.files ?? null,
@@ -182,8 +175,8 @@ export default function ProjectPage({
   };
 
   const codeEditorProps = {
-    files: allFiles,
-    initialFile: Object.keys(allFiles)[0],
+    files,
+    initialFile: Object.keys(files)[0],
   };
 
   // 是否有任何已完成的 Agent

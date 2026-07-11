@@ -198,7 +198,6 @@ function parseAlexCodeFromContent(content: string): AlexCode | null {
     return {
       files,
       entryFile: (parsed.entryFile as string) ?? "/App.tsx",
-      setupInstructions: (parsed.setupInstructions as string) ?? "",
       dependencies: (parsed.dependencies as Record<string, string>) ?? {},
     };
   } catch {

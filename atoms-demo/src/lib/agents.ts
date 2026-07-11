@@ -381,9 +381,6 @@ function parseAlexOutput(output: AgentOutput): AlexCode | null {
   return {
     files,
     entryFile: (data.entryFile as string) ?? "/App.tsx",
-    setupInstructions: (data.setupInstructions as string) ?? "",
     dependencies: (data.dependencies as Record<string, string>) ?? {},
-    sqlMigration: (data.sqlMigration as string) ?? undefined,
-    apiRoutes: (data.apiRoutes as Record<string, string>) ?? undefined,
   };
 }
