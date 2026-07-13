@@ -74,7 +74,8 @@ export function buildAlexPrompt(userInput: string, context?: string): string {
 ## 技术栈
 - 前端：React 18 + TypeScript + Tailwind CSS + zustand
 - 后端：Supabase（PostgreSQL + Auth + RLS）
-- 数据持久化使用 Supabase 客户端 SDK，不使用 localStorage
+- Sandpack 预览用 zustand + localStorage mock 数据，但代码保留 Supabase 客户端结构
+- 使用 @supabase/supabase-js 可正常 import（Sandpack 已内置）
 
 ## 交付标准
 - 4-5 个组件文件（App.tsx + 核心业务组件）

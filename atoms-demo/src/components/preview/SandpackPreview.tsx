@@ -100,6 +100,7 @@ const BASE_DEPENDENCIES: Record<string, string> = {
   clsx: "^2.0.0",
   "tailwind-merge": "^2.0.0",
   "class-variance-authority": "^0.7.0",
+  "@supabase/supabase-js": "^2.0.0",
 };
 
 // ---------------------------------------------------------------------------

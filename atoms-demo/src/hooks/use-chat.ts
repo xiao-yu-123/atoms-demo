@@ -269,7 +269,7 @@ export function useChat(options: UseChatOptions) {
               finalCode = {
                 files: recovered,
                 entryFile: recovered["/App.tsx"] ? "/App.tsx" : Object.keys(recovered)[0],
-                dependencies: {},
+                dependencies: { "@supabase/supabase-js": "^2.0.0" },
               };
               break;
             }
