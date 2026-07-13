@@ -5,8 +5,6 @@
 import type { AlexCode } from "@/lib/prompts";
 
 export type SSEChatEventType =
-  | "rewrite_start"
-  | "rewrite_complete"
   | "agent_start"
   | "agent_stream"
   | "agent_complete"
@@ -22,6 +20,4 @@ export interface SSEChatEvent {
   code?: AlexCode;
   message?: string;
   conversationId?: string;
-  original?: string;
-  rewritten?: string;
 }

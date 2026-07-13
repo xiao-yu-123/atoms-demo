@@ -136,9 +136,13 @@ export async function callAgent(
   const serializedContext = serializeContext(previousOutputs, projectContext);
   const systemPrompt = buildPrompt(agent, userInput, serializedContext || undefined);
 
+  // max_tokens 按 Agent 分层：非 Alex Agent 用较小值加速
+  const maxTokens = agent === "alex" ? 4096 : agent === "mike" ? 800 : 1200;
+
   const response = await openai.chat.completions.create({
     model,
     temperature,
+    max_tokens: maxTokens,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: `请开始执行${agent === "mike" ? "，制定执行计划" : ""}。` },
@@ -188,6 +192,9 @@ export async function* streamAgentResponse(
   const serializedContext = serializeContext(previousOutputs, projectContext);
   const systemPrompt = buildPrompt(agent, userInput, serializedContext || undefined);
 
+  // max_tokens 按 Agent 分层
+  const maxTokens = agent === "alex" ? 4096 : agent === "mike" ? 800 : 1200;
+
   // 发出 agent_start 事件
   yield { type: "agent_start", agent };
 
@@ -196,6 +203,7 @@ export async function* streamAgentResponse(
   const stream = await openai.chat.completions.create({
     model,
     temperature,
+    max_tokens: maxTokens,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: `请开始执行${agent === "mike" ? "，制定执行计划" : ""}。` },
