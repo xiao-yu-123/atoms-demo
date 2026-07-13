@@ -75,14 +75,19 @@ export function buildAlexPrompt(userInput: string, context?: string): string {
 - Sandpack 直接运行，至少 8 个组件文件
 - 完整 CRUD + 搜索筛选 + zustand + localStorage 持久化
 - 预置 5-8 条 mock 数据，每个组件处理 Loading/Empty/Error/Data 四种状态
-- 图标用 emoji：✏️ 🗑️ 🔍 ✅ ❌ ➕ 📋 ⚡ 📊 💾
+- 图标用 emoji
 
 ## UI 规范
 - 页面 bg-zinc-950，卡片 bg-zinc-900 border border-zinc-800 rounded-xl
 - 主按钮 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg px-4 py-2 text-sm
 - 输入框 bg-zinc-900 border-zinc-800 focus:border-emerald-500/50 rounded-lg px-3 py-2 text-sm text-zinc-100
-- 危险操作弹出确认弹窗，操作成功显示 Toast（3 秒消失）
+- 危险操作弹出确认弹窗，操作成功显示 Toast
 - 禁止白色背景、全宽无居中、console.log、any 类型
+
+## JSON 格式（违反将导致解析失败）
+- 直接输出裸 JSON，禁止用 markdown 代码块包裹
+- 代码中禁止模板字符串，改用普通字符串拼接
+- JSON 内双引号必须转义
 
 ${ctx}
 用户需求："${userInput}"

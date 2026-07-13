@@ -440,7 +440,12 @@ function tryParseJSON(content: string): Record<string, unknown> | null {
 
   // 1. 尝试提取 markdown 代码块
   const match = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
-  if (match) cleaned = match[1].trim();
+  if (match) {
+    cleaned = match[1].trim();
+  } else if (cleaned.startsWith("```")) {
+    // 有开头无结尾：去掉开头的 ```json 行
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, "").trim();
+  }
 
   // 2. 用括号匹配找第一个完整的 JSON 对象（处理嵌套 { } 在字符串内的情况）
   const balanced = findBalancedJSON(cleaned);
