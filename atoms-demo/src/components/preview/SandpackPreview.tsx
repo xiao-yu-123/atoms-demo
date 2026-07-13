@@ -421,18 +421,31 @@ import { createRoot } from "react-dom/client";
 import * as AppModule from "${entry.startsWith("/") ? entry : `/${entry}`}";
 
 // 递归查找第一个函数组件（兼容任意导出风格）
-function findComponent(obj) {
+function findComponent(obj, depth) {
+  if (depth > 3) return null;
   if (typeof obj === "function") return obj;
   if (obj && typeof obj === "object") {
     for (const v of Object.values(obj)) {
-      const found = findComponent(v);
+      const found = findComponent(v, (depth||0)+1);
       if (found) return found;
     }
   }
   return null;
 }
-let App = findComponent(AppModule);
-if (!App) throw new Error("App component not found. Use 'export default function App()' in App.tsx");
+let App = findComponent(AppModule, 0);
+// 最终回退：任一 function 导出
+if (!App) {
+  for (const k of Object.keys(AppModule)) {
+    if (typeof AppModule[k] === "function") { App = AppModule[k]; break; }
+  }
+}
+if (!App) {
+  throw new Error(
+    "App component not found. " +
+    "Exports: " + Object.keys(AppModule).map(k => k + ":" + typeof AppModule[k]).join(", ") + ". " +
+    "Use 'export default function App()' in App.tsx"
+  );
+}
 
 const el = document.getElementById("root");
 if (!el) throw new Error("root not found");
