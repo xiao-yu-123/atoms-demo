@@ -81,11 +81,52 @@ export default function ProjectPage({
   const isStreaming = useChatStore((s) => s.isStreaming);
   const agentStates = useChatStore((s) => s.agentStates);
   const resetChat = useChatStore((s) => s.reset);
+  const setGeneratedCode = useChatStore((s) => s.setGeneratedCode);
 
   // 进入项目页时清空上一次的对话残留（防止跨项目污染）
   useEffect(() => {
     resetChat();
   }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 恢复最近一次生成的代码（页面刷新/重新进入后仍可预览）
+  useEffect(() => {
+    if (!supabase || !projectId) return;
+
+    let cancelled = false;
+
+    async function loadLatestCode() {
+      const { data } = await supabase!
+        .from("generated_code")
+        .select("files")
+        .eq("project_id", projectId)
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (cancelled || !data?.files) return;
+
+      // 从文件中推断入口文件
+      const fileNames = Object.keys(data.files as Record<string, string>);
+      const entryFile =
+        fileNames.find((f) => f.endsWith("App.tsx")) ??
+        fileNames.find((f) => f.endsWith("App.jsx")) ??
+        fileNames[0] ??
+        "/App.tsx";
+
+      if (!cancelled) {
+        setGeneratedCode({
+          files: data.files as Record<string, string>,
+          entryFile,
+          dependencies: {},
+        });
+      }
+    }
+
+    loadLatestCode();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId, setGeneratedCode]);
 
   // ------------------------------------------------------------------
   // 加载项目数据
