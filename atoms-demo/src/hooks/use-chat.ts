@@ -8,7 +8,7 @@
 import { useCallback, useRef } from "react";
 import { useChatStore } from "@/stores/chat-store";
 import { supabase } from "@/lib/supabase";
-import type { AgentId, MikePlan } from "@/lib/prompts";
+import type { AgentId, MikePlan, AlexCode } from "@/lib/prompts";
 import type { AgentOutput } from "@/types/agent";
 import type { SSEChatEvent } from "./use-chat-types";
 
@@ -234,54 +234,62 @@ export function useChat(options: UseChatOptions) {
         }
 
         // ----------------------------------------------------------------
-        // Step 3: 提取 Alex 代码 + 保存
+        // Step 3: 提取代码（优先 Alex，回退到任意含 files 的输出）
         // ----------------------------------------------------------------
-        const alexOutput = accumulatedOutputs.find((o) => o.agent === "alex");
-        let finalCode = undefined;
+        let finalCode: AlexCode | undefined;
 
-        if (alexOutput?.structuredData) {
-          const d = alexOutput.structuredData as Record<string, unknown>;
-          const files = d.files as Record<string, string> | undefined;
-          if (files && Object.keys(files).length > 0) {
-            finalCode = {
-              files,
-              entryFile: (d.entryFile as string) ?? "/App.tsx",
-              dependencies: (d.dependencies as Record<string, string>) ?? {},
-            };
+        // 从后往前遍历 accumulatedOutputs，找第一个包含 files 的输出
+        for (let i = accumulatedOutputs.length - 1; i >= 0; i--) {
+          const o = accumulatedOutputs[i];
+          if (o.structuredData) {
+            const d = o.structuredData as Record<string, unknown>;
+            const files = d.files as Record<string, string> | undefined;
+            if (files && Object.keys(files).length > 0) {
+              finalCode = {
+                files,
+                entryFile: (d.entryFile as string) ?? "/App.tsx",
+                dependencies: (d.dependencies as Record<string, string>) ?? {},
+              };
+              break;
+            }
           }
         }
 
-        // 保存代码到 Supabase（使用本地 convId，避免 zustand 快照旧值）
-        if (supabase && projectId && convId && finalCode) {
-          const { data: latestCode } = await supabase
-            .from("generated_code")
-            .select("version")
-            .eq("project_id", projectId)
-            .order("version", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          const nextVersion = (latestCode?.version ?? 0) + 1;
-
-          await supabase.from("generated_code").insert({
-            project_id: projectId,
-            conversation_id: convId,
-            code_type: "full_app",
-            files: finalCode.files,
-            version: nextVersion,
-          });
-
-          await supabase
-            .from("projects")
-            .update({ status: "building" })
-            .eq("id", projectId)
-            .eq("status", "draft");
-        }
-
-        // 完成
+        // 先更新预览（必须在 DB 保存之前，避免 DB 失败阻断 UI 更新）
         store.setGeneratedCode(finalCode ?? null);
         store.setIsStreaming(false);
         onComplete?.(finalCode?.files);
+
+        // 再异步保存到 Supabase（失败不影响预览）
+        if (supabase && projectId && convId && finalCode) {
+          try {
+            const { data: latestCode } = await supabase
+              .from("generated_code")
+              .select("version")
+              .eq("project_id", projectId)
+              .order("version", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            const nextVersion = (latestCode?.version ?? 0) + 1;
+
+            await supabase.from("generated_code").insert({
+              project_id: projectId,
+              conversation_id: convId,
+              code_type: "full_app",
+              files: finalCode.files,
+              version: nextVersion,
+            });
+
+            await supabase
+              .from("projects")
+              .update({ status: "building" })
+              .eq("id", projectId)
+              .eq("status", "draft");
+          } catch {
+            // DB 保存失败不影响预览，静默处理
+          }
+        }
       } catch (err) {
         if ((err as Error).name === "AbortError") return;
         const message = err instanceof Error ? err.message : "请求失败";

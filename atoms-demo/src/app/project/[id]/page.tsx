@@ -88,7 +88,7 @@ export default function ProjectPage({
     resetChat();
   }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 恢复最近一次生成的代码（页面刷新/重新进入后仍可预览）
+  // 恢复最近一次生成的代码（仅在尚无代码时加载，避免覆盖当前会话）
   useEffect(() => {
     if (!supabase || !projectId) return;
 
@@ -104,6 +104,9 @@ export default function ProjectPage({
         .maybeSingle();
 
       if (cancelled || !data?.files) return;
+
+      // 如果当前会话已生成代码，不覆盖（避免覆盖 sendMessage 刚设置的代码）
+      if (useChatStore.getState().generatedCode) return;
 
       // 从文件中推断入口文件
       const fileNames = Object.keys(data.files as Record<string, string>);
