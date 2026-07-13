@@ -136,8 +136,8 @@ export async function callAgent(
   const serializedContext = serializeContext(previousOutputs, projectContext);
   const systemPrompt = buildPrompt(agent, userInput, serializedContext || undefined);
 
-  // max_tokens 按 Agent 分层：Alex 最大，Emma 需要完整 PRD
-  const maxTokens = agent === "alex" ? 4096 : agent === "emma" ? 3000 : agent === "mike" ? 800 : 2000;
+  // max_tokens 按 Agent 分层：Alex 需要大量代码输出
+  const maxTokens = agent === "alex" ? 8192 : agent === "emma" ? 3000 : agent === "mike" ? 800 : 2000;
 
   const response = await openai.chat.completions.create({
     model,

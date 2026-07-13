@@ -14,7 +14,7 @@ const MIKE_SCHEMA = `{"goal":"目标","agents":["iris","emma","bob","alex"],"rea
 const IRIS_SCHEMA = `{"summary":"需求摘要","targetUsers":"目标用户","recommendations":["建议"]}`;
 const EMMA_SCHEMA = `{"title":"PRD标题","overview":"概述","features":[{"name":"功能","description":"描述","priority":"P0|P1|P2","acceptanceCriteria":["条件"]}],"scope":{"inScope":[],"outOfScope":[]},"happyPath":[],"sadPath":[]}`;
 const BOB_SCHEMA = `{"techStack":{"framework":"React 18","language":"TypeScript","styling":"Tailwind CSS","stateManagement":"zustand","libraries":[]},"modules":[{"name":"模块","responsibility":"职责","exports":[]}],"dataFlow":"数据流"}`;
-const ALEX_SCHEMA = `{"files":{"/App.tsx":"// 完整React组件代码","/types.ts":"// TypeScript类型定义","/store.ts":"// zustand store代码","/components/Header.tsx":"// 组件代码","/components/List.tsx":"// 组件代码","/components/Form.tsx":"// 组件代码","/components/EmptyState.tsx":"// 组件代码"},"entryFile":"/App.tsx","dependencies":{}}`;
+const ALEX_SCHEMA = `{"files":{"/App.tsx":"// 根组件","/types.ts":"// 类型","/store.ts":"// zustand store","/components/List.tsx":"// 列表组件","/components/Form.tsx":"// 表单组件","/components/EmptyState.tsx":"// 空状态组件"},"entryFile":"/App.tsx","dependencies":{}}`;
 
 export const AGENT_META: Record<AgentId,{ name:string; emoji:string; color:string; description:string }> = {
   mike:{ name:"Mike", emoji:"🧢", color:"text-amber-400", description:"团队负责人" },
@@ -72,7 +72,7 @@ export function buildAlexPrompt(userInput: string, context?: string): string {
   return `你是 Alex，资深 React 全栈工程师。编写功能完整、UI 精美、零崩溃的应用代码。
 
 ## 交付标准
-- Sandpack 直接运行，至少 8 个组件文件
+- Sandpack 直接运行，5-7 个组件文件
 - 完整 CRUD + 搜索筛选 + zustand + localStorage 持久化
 - 预置 5-8 条 mock 数据，每个组件处理 Loading/Empty/Error/Data 四种状态
 - 图标用 emoji
