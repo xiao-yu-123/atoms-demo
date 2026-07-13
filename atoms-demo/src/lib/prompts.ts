@@ -83,6 +83,12 @@ export function buildAlexPrompt(userInput: string, context?: string): string {
 - 代码精简，避免冗余，确保 JSON 完整闭合
 - 图标用 emoji
 
+## 组件导出规范（必须遵守）
+- App.tsx 必须用 \`export default function App()\`
+- 其他组件全部用命名导出：\`export function Xxx()\`
+- 导入命名导出：\`import { Xxx } from "./components/Xxx"\`
+- 导入默认导出：\`import App from "./App"\`
+
 ## UI 规范
 - 页面 bg-zinc-950，卡片 bg-zinc-900 border border-zinc-800 rounded-xl
 - 主按钮 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg px-4 py-2 text-sm
