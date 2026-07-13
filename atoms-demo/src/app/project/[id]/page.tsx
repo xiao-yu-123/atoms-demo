@@ -5,7 +5,7 @@
 // 路由: /project/[id]
 // ============================================================================
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -206,21 +206,24 @@ export default function ProjectPage({
   }
 
   // ------------------------------------------------------------------
-  // 构建 PreviewTabs 所需的 props
+  // 构建 PreviewTabs 所需的 props（memo 避免每次渲染新建引用）
   // ------------------------------------------------------------------
   const files = generatedCode?.files ?? {};
 
-  const previewProps = {
+  const previewProps = useMemo(() => ({
     generatedCode: generatedCode?.files ?? null,
     isGenerating: isStreaming,
     dependencies: generatedCode?.dependencies,
     entryFile: generatedCode?.entryFile,
-  };
+  }), [generatedCode?.files, isStreaming, generatedCode?.dependencies, generatedCode?.entryFile]);
 
-  const codeEditorProps = {
+  const codeEditorProps = useMemo(() => ({
     files,
     initialFile: Object.keys(files)[0],
-  };
+  }), [files]);
+
+  const panelRatios = useMemo(() => [3, 3, 4], []);
+  const panelMinWidths = useMemo(() => [280, 240, 320], []);
 
   // 是否有任何已完成的 Agent
   const hasActivity = Object.values(agentStates).some(
@@ -288,8 +291,8 @@ export default function ProjectPage({
       {/* 主工作区：三栏可拖拽布局 3:3:4 */}
       {/* ================================================================ */}
       <ResizablePanel
-        initialRatios={[3, 3, 4]}
-        minWidths={[280, 240, 320]}
+        initialRatios={panelRatios}
+        minWidths={panelMinWidths}
         className="flex-1"
       >
         {/* 左栏 — ChatPanel */}
