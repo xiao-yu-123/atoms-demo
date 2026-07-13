@@ -12,6 +12,12 @@ import type { AgentId, MikePlan, AlexCode } from "@/lib/prompts";
 import type { AgentOutput, ProjectContext } from "@/types/agent";
 
 // ---------------------------------------------------------------------------
+// Route Segment Config — Vercel Serverless 超时 & 流式响应
+// ---------------------------------------------------------------------------
+
+export const maxDuration = 60; // 秒（Vercel Pro 上限）
+
+// ---------------------------------------------------------------------------
 // Request / Response types
 // ---------------------------------------------------------------------------
 
@@ -60,7 +66,7 @@ async function rewriteQuery(rawInput: string): Promise<string> {
 2. **补充隐性需求**：用户没提到但必要的功能（如搜索、筛选、数据持久化、空状态等）
 3. **明确不做什么**：界定范围，避免过度设计
 4. **用户角色**：谁会使用这个产品？
-5. **技术约束**：这是纯前端 React 应用，数据存储在 localStorage，无后端
+5. **技术约束**：React 应用，使用 Supabase 作为后端数据库（PostgreSQL + Auth + RLS），支持完整的数据持久化和用户认证
 
 ## 输出格式
 直接输出重写后的 Brief，用中文，不超过 500 字。不要输出 JSON，不要用 markdown 标题。
