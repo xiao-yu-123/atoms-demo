@@ -238,13 +238,7 @@ export function useChat(options: UseChatOptions) {
         // ----------------------------------------------------------------
         let finalCode: AlexCode | undefined;
 
-        console.warn("[useChat] Extracting code from", accumulatedOutputs.length, "agent outputs");
-        for (const o of accumulatedOutputs) {
-          console.warn("[useChat] Agent", o.agent, "content length:", o.content?.length, "has structuredData:", !!o.structuredData);
-          if (o.structuredData) {
-            console.warn("[useChat] structuredData keys:", Object.keys(o.structuredData));
-          }
-        }
+        // 代码提取（详细日志已移除，需要调试时恢复）
 
         // 从后往前遍历 accumulatedOutputs，找第一个包含 files 的输出
         for (let i = accumulatedOutputs.length - 1; i >= 0; i--) {
@@ -253,7 +247,7 @@ export function useChat(options: UseChatOptions) {
             const d = o.structuredData as Record<string, unknown>;
             const files = d.files as Record<string, string> | undefined;
             if (files && Object.keys(files).length > 0) {
-              console.warn("[useChat] Found files in agent", o.agent, "file count:", Object.keys(files).length);
+              // files found, building finalCode
               finalCode = {
                 files,
                 entryFile: (d.entryFile as string) ?? "/App.tsx",
@@ -264,8 +258,6 @@ export function useChat(options: UseChatOptions) {
           }
         }
 
-        console.warn("[useChat] finalCode extracted:", !!finalCode, finalCode ? Object.keys(finalCode.files).length : 0, "files");
-
         // 回退方案：JSON 解析失败时，从原始内容用正则提取文件
         if (!finalCode) {
           for (let i = accumulatedOutputs.length - 1; i >= 0; i--) {
@@ -273,7 +265,7 @@ export function useChat(options: UseChatOptions) {
             if (!raw || raw.length < 100) continue;
             const recovered = recoverFilesFromJSON(raw);
             if (recovered && Object.keys(recovered).length > 0) {
-              console.warn("[useChat] Recovered", Object.keys(recovered).length, "files from raw content");
+              // recovered files from truncated JSON
               finalCode = {
                 files: recovered,
                 entryFile: recovered["/App.tsx"] ? "/App.tsx" : Object.keys(recovered)[0],
@@ -385,7 +377,6 @@ export function useChat(options: UseChatOptions) {
         .order("created_at", { ascending: true });
 
       if (error) {
-        console.warn("加载对话失败:", error.message);
         return;
       }
 
@@ -473,9 +464,7 @@ function tryParseJSON(content: string): Record<string, unknown> | null {
     const result = JSON.parse(cleaned) as Record<string, unknown>;
     return result;
   } catch (e) {
-    console.warn("[useChat] JSON parse error:", (e as Error).message);
-    console.warn("[useChat] First 300 chars:", cleaned.slice(0, 300));
-    console.warn("[useChat] Last 300 chars:", cleaned.slice(-300));
+    // JSON parse failed — recovery will attempt to salvage files
     return null;
   }
 }
