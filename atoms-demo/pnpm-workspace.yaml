@@ -1,0 +1,6 @@
+allowBuilds:
+  es5-ext: true
+  sharp: true
+onlyBuiltDependencies:
+  - es5-ext
+  - sharp
