@@ -430,7 +430,10 @@ function findComponent(obj) {
 }
 let App = findComponent(AppModule);
 if (!App) throw new Error("App component not found. Use 'export default function App()' in App.tsx");
-}
+
+const el = document.getElementById("root");
+if (!el) throw new Error("root not found");
+const root = createRoot(el);
 root.render(<React.StrictMode><App /></React.StrictMode>);`,
             ...normalizedFiles,
           }}
