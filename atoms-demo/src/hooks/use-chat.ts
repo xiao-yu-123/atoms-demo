@@ -66,6 +66,9 @@ export function useChat(options: UseChatOptions) {
       const abort = new AbortController();
       abortRef.current = abort;
 
+      // 使用本地变量跟踪 conversationId，避免 zustand 快照读取旧值
+      let convId = store.conversationId;
+
       try {
         // ----------------------------------------------------------------
         // Step 1: POST /api/chat/plan → Mike 制定计划
@@ -76,7 +79,7 @@ export function useChat(options: UseChatOptions) {
           body: JSON.stringify({
             projectId,
             userInput,
-            conversationId: store.conversationId ?? undefined,
+            conversationId: convId ?? undefined,
           }),
           signal: abort.signal,
         });
@@ -91,8 +94,9 @@ export function useChat(options: UseChatOptions) {
           throw new Error(planData.error);
         }
 
-        // 保存 conversationId
+        // 保存 conversationId（同时更新本地变量 + store）
         if (planData.conversationId) {
+          convId = planData.conversationId;
           store.setConversationId(planData.conversationId);
         }
 
@@ -165,7 +169,7 @@ export function useChat(options: UseChatOptions) {
                   timestamp: o.timestamp,
                 })),
                 projectId,
-                conversationId: store.conversationId ?? undefined,
+                conversationId: convId ?? undefined,
               }),
               signal: abort.signal,
             });
@@ -247,8 +251,7 @@ export function useChat(options: UseChatOptions) {
           }
         }
 
-        // 保存代码到 Supabase
-        const convId = store.conversationId;
+        // 保存代码到 Supabase（使用本地 convId，避免 zustand 快照旧值）
         if (supabase && projectId && convId && finalCode) {
           const { data: latestCode } = await supabase
             .from("generated_code")
