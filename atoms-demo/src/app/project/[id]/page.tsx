@@ -14,7 +14,6 @@ import {
   Settings2,
   Loader2,
   AlertCircle,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -288,27 +287,12 @@ export default function ProjectPage({
           </div>
         </div>
 
-        {/* 右栏 — 预览 + 代码 */}
-        {generatedCode || isStreaming ? (
-          <PreviewTabs
-            preview={previewProps}
-            codeEditor={codeEditorProps}
-            defaultTab="preview"
-          />
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-4 bg-zinc-950 px-8">
-            <div className="relative mb-2">
-              <div className="absolute inset-0 animate-pulse rounded-full bg-emerald-500/10 blur-2xl" />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900">
-                <Sparkles className="h-7 w-7 text-emerald-400" />
-              </div>
-            </div>
-            <h3 className="text-lg font-semibold text-zinc-200">准备就绪</h3>
-            <p className="max-w-xs text-center text-sm text-zinc-500">
-              在左侧对话区描述你的想法，AI Agent 团队将为你生成可运行的应用代码。
-            </p>
-          </div>
-        )}
+        {/* 右栏 — 预览 + 代码（始终显示，空状态由 SandpackPreviewWrapper 处理） */}
+        <PreviewTabs
+          preview={previewProps}
+          codeEditor={codeEditorProps}
+          defaultTab="preview"
+        />
       </ResizablePanel>
     </div>
   );
