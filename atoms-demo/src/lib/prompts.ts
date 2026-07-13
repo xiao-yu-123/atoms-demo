@@ -14,7 +14,7 @@ const MIKE_SCHEMA = `{"goal":"目标","agents":["iris","emma","bob","alex"],"rea
 const IRIS_SCHEMA = `{"summary":"需求摘要","targetUsers":"目标用户","recommendations":["建议"]}`;
 const EMMA_SCHEMA = `{"title":"PRD标题","overview":"概述","features":[{"name":"功能","description":"描述","priority":"P0|P1|P2","acceptanceCriteria":["条件"]}],"scope":{"inScope":[],"outOfScope":[]},"happyPath":[],"sadPath":[]}`;
 const BOB_SCHEMA = `{"techStack":{"framework":"React 18","language":"TypeScript","styling":"Tailwind CSS","stateManagement":"zustand","libraries":[]},"modules":[{"name":"模块","responsibility":"职责","exports":[]}],"dataFlow":"数据流"}`;
-const ALEX_SCHEMA = `{"files":{"/App.tsx":"根组件","/types.ts":"类型","/store.ts":"zustand store","/components/Header.tsx":"头部","/components/List.tsx":"列表","/components/Form.tsx":"表单","/components/EmptyState.tsx":"空状态"},"entryFile":"/App.tsx","dependencies":{}}`;
+const ALEX_SCHEMA = `{"files":{"/App.tsx":"// 完整React组件代码","/types.ts":"// TypeScript类型定义","/store.ts":"// zustand store代码","/components/Header.tsx":"// 组件代码","/components/List.tsx":"// 组件代码","/components/Form.tsx":"// 组件代码","/components/EmptyState.tsx":"// 组件代码"},"entryFile":"/App.tsx","dependencies":{}}`;
 
 export const AGENT_META: Record<AgentId,{ name:string; emoji:string; color:string; description:string }> = {
   mike:{ name:"Mike", emoji:"🧢", color:"text-amber-400", description:"团队负责人" },

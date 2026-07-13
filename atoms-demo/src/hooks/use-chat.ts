@@ -447,8 +447,12 @@ function tryParseJSON(content: string): Record<string, unknown> | null {
   if (balanced) cleaned = balanced;
 
   try {
-    return JSON.parse(cleaned) as Record<string, unknown>;
-  } catch {
+    const result = JSON.parse(cleaned) as Record<string, unknown>;
+    return result;
+  } catch (e) {
+    console.warn("[useChat] JSON parse error:", (e as Error).message);
+    console.warn("[useChat] First 300 chars:", cleaned.slice(0, 300));
+    console.warn("[useChat] Last 300 chars:", cleaned.slice(-300));
     return null;
   }
 }
