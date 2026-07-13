@@ -198,13 +198,15 @@ export function SandpackPreviewWrapper({
     return generatedCode;
   }, [generatedCode]);
 
-  // 合并依赖
+  // 合并依赖：基础依赖 + AI 生成的额外依赖
   const mergedDependencies = useMemo(() => {
-    if (!dependencies || Object.keys(dependencies).length === 0) {
-      return BASE_DEPENDENCIES;
-    }
-    // 确保基础依赖不被覆盖
-    return { ...dependencies, react: BASE_DEPENDENCIES.react, "react-dom": BASE_DEPENDENCIES["react-dom"] };
+    return {
+      ...BASE_DEPENDENCIES,
+      ...(dependencies || {}),
+      // 确保 react 版本不被覆盖
+      react: BASE_DEPENDENCIES.react,
+      "react-dom": BASE_DEPENDENCIES["react-dom"],
+    };
   }, [dependencies]);
 
   // 确定入口文件（去掉开头的 /，Sandpack 用相对路径）
