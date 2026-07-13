@@ -238,6 +238,14 @@ export function useChat(options: UseChatOptions) {
         // ----------------------------------------------------------------
         let finalCode: AlexCode | undefined;
 
+        console.warn("[useChat] Extracting code from", accumulatedOutputs.length, "agent outputs");
+        for (const o of accumulatedOutputs) {
+          console.warn("[useChat] Agent", o.agent, "content length:", o.content?.length, "has structuredData:", !!o.structuredData);
+          if (o.structuredData) {
+            console.warn("[useChat] structuredData keys:", Object.keys(o.structuredData));
+          }
+        }
+
         // 从后往前遍历 accumulatedOutputs，找第一个包含 files 的输出
         for (let i = accumulatedOutputs.length - 1; i >= 0; i--) {
           const o = accumulatedOutputs[i];
@@ -245,6 +253,7 @@ export function useChat(options: UseChatOptions) {
             const d = o.structuredData as Record<string, unknown>;
             const files = d.files as Record<string, string> | undefined;
             if (files && Object.keys(files).length > 0) {
+              console.warn("[useChat] Found files in agent", o.agent, "file count:", Object.keys(files).length);
               finalCode = {
                 files,
                 entryFile: (d.entryFile as string) ?? "/App.tsx",
@@ -254,6 +263,8 @@ export function useChat(options: UseChatOptions) {
             }
           }
         }
+
+        console.warn("[useChat] finalCode extracted:", !!finalCode, finalCode ? Object.keys(finalCode.files).length : 0, "files");
 
         // 先更新预览（必须在 DB 保存之前，避免 DB 失败阻断 UI 更新）
         store.setGeneratedCode(finalCode ?? null);
@@ -426,14 +437,53 @@ function extractSummary(content: string, maxLen = 300): string {
 function tryParseJSON(content: string): Record<string, unknown> | null {
   if (!content) return null;
   let cleaned = content.trim();
+
+  // 1. 尝试提取 markdown 代码块
   const match = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
   if (match) cleaned = match[1].trim();
-  const first = cleaned.indexOf("{");
-  const last = cleaned.lastIndexOf("}");
-  if (first !== -1 && last > first) cleaned = cleaned.slice(first, last + 1);
+
+  // 2. 用括号匹配找第一个完整的 JSON 对象（处理嵌套 { } 在字符串内的情况）
+  const balanced = findBalancedJSON(cleaned);
+  if (balanced) cleaned = balanced;
+
   try {
     return JSON.parse(cleaned) as Record<string, unknown>;
   } catch {
     return null;
   }
+}
+
+/** 从第一个 { 开始匹配括号，找到平衡的 JSON 对象 */
+function findBalancedJSON(str: string): string | null {
+  const first = str.indexOf("{");
+  if (first === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = first; i < str.length; i++) {
+    const ch = str[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (ch === "\\" && inString) {
+      escapeNext = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (ch === "{") depth++;
+      if (ch === "}") {
+        depth--;
+        if (depth === 0) return str.slice(first, i + 1);
+      }
+    }
+  }
+  return null; // 括号不平衡
 }

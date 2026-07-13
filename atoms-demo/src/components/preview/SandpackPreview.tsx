@@ -172,7 +172,13 @@ export function SandpackPreviewWrapper({
   // generatedCode 更新时重建 SandpackProvider
   useEffect(() => {
     if (generatedCode) {
+      console.warn("[SandpackPreview] generatedCode changed, incrementing key", {
+        fileCount: Object.keys(generatedCode).length,
+        files: Object.keys(generatedCode),
+      });
       setKey((prev) => prev + 1);
+    } else {
+      console.warn("[SandpackPreview] generatedCode is null/empty, showing placeholder");
     }
   }, [generatedCode]);
 
