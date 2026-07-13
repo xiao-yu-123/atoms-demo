@@ -415,13 +415,21 @@ export function SandpackPreviewWrapper({
             // 覆盖模板默认入口，使用 .jsx 支持 JSX 语法
             "/index.jsx": `import React from "react";
 import { createRoot } from "react-dom/client";
-import AppImport from "${entry.startsWith("/") ? entry : `/${entry}`}";
-// 兼容 default 和 named 导出
-const App = AppImport && (AppImport.default || AppImport.App || AppImport);
+import * as AppModule from "${entry.startsWith("/") ? entry : `/${entry}`}";
+
+// 智能解析 App 组件：default > named App > 第一个 function 导出
+const candidates = [AppModule.default, AppModule.App];
+let App = candidates.find(c => typeof c === "function");
+if (!App) {
+  for (const key of Object.keys(AppModule)) {
+    if (typeof AppModule[key] === "function") { App = AppModule[key]; break; }
+  }
+}
+
 const el = document.getElementById("root");
 if (!el) throw new Error("root not found");
 const root = createRoot(el);
-if (typeof App !== "function") throw new Error("App component not found. Please use 'export default function App()' in App file.");
+if (!App) throw new Error("No component found in " + Object.keys(AppModule).join(", "));
 root.render(<React.StrictMode><App /></React.StrictMode>);`,
             ...normalizedFiles,
           }}
