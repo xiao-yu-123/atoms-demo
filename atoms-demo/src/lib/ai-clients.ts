@@ -64,7 +64,7 @@ export async function chatWithOpenAI(
   userMessage: string,
   options?: { model?: string; maxTokens?: number; temperature?: number }
 ): Promise<string> {
-  const model = options?.model || "qwen3.7-max-2026-06-08";
+  const model = options?.model || "qwen3.7-max-2026-05-20";
   const maxTokens = options?.maxTokens || 4096;
   const temperature = options?.temperature ?? 0.7;
 
