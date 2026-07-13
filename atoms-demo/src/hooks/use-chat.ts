@@ -266,6 +266,24 @@ export function useChat(options: UseChatOptions) {
 
         console.warn("[useChat] finalCode extracted:", !!finalCode, finalCode ? Object.keys(finalCode.files).length : 0, "files");
 
+        // 回退方案：JSON 解析失败时，从原始内容用正则提取文件
+        if (!finalCode) {
+          for (let i = accumulatedOutputs.length - 1; i >= 0; i--) {
+            const raw = accumulatedOutputs[i].content;
+            if (!raw || raw.length < 100) continue;
+            const recovered = recoverFilesFromJSON(raw);
+            if (recovered && Object.keys(recovered).length > 0) {
+              console.warn("[useChat] Recovered", Object.keys(recovered).length, "files from raw content");
+              finalCode = {
+                files: recovered,
+                entryFile: recovered["/App.tsx"] ? "/App.tsx" : Object.keys(recovered)[0],
+                dependencies: {},
+              };
+              break;
+            }
+          }
+        }
+
         // 先更新预览（必须在 DB 保存之前，避免 DB 失败阻断 UI 更新）
         store.setGeneratedCode(finalCode ?? null);
         store.setIsStreaming(false);
@@ -460,6 +478,22 @@ function tryParseJSON(content: string): Record<string, unknown> | null {
     console.warn("[useChat] Last 300 chars:", cleaned.slice(-300));
     return null;
   }
+}
+
+/** 从截断的 JSON 中尽力恢复文件 */
+function recoverFilesFromJSON(raw: string): Record<string, string> | null {
+  const files: Record<string, string> = {};
+  // 匹配 "/path.tsx": "content" 模式，content 可能包含转义字符
+  const re = /"(\/[^"]+\.(?:tsx?|jsx?|css))"\s*:\s*"((?:[^"\\]|\\.)*?)"\s*[,}]/g;
+  let match;
+  while ((match = re.exec(raw)) !== null) {
+    const path = match[1];
+    let content = match[2];
+    // 反转义 JSON 字符串
+    content = content.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r').replace(/\\\\/g, '\\');
+    files[path] = content;
+  }
+  return Object.keys(files).length > 0 ? files : null;
 }
 
 /** 从第一个 { 开始匹配括号，找到平衡的 JSON 对象 */

@@ -77,10 +77,10 @@ export function buildAlexPrompt(userInput: string, context?: string): string {
 - 数据持久化使用 Supabase 客户端 SDK，不使用 localStorage
 
 ## 交付标准
-- Sandpack 直接运行，5-7 个组件文件
-- 完整 CRUD + 搜索筛选，每个组件处理 Loading/Empty/Error/Data 状态
-- 预置 5-8 条 mock 数据（前端 mock，不依赖 Supabase 连接）
-- 包含 SQL migration 脚本（CREATE TABLE + RLS policy）
+- 4-5 个组件文件（App.tsx + 核心业务组件）
+- 完整 CRUD + 搜索筛选，处理 Loading/Empty/Error/Data 状态
+- 预置 3-5 条 mock 数据
+- 代码精简，避免冗余，确保 JSON 完整闭合
 - 图标用 emoji
 
 ## UI 规范
