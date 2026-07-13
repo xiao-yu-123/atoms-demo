@@ -417,19 +417,29 @@ export function SandpackPreviewWrapper({
 import { createRoot } from "react-dom/client";
 import * as AppModule from "${entry.startsWith("/") ? entry : `/${entry}`}";
 
-// 智能解析 App 组件：default > named App > 第一个 function 导出
-const candidates = [AppModule.default, AppModule.App];
-let App = candidates.find(c => typeof c === "function");
-if (!App) {
+// 智能解析 App 组件
+let App = AppModule.default;
+// default 可能是 { App: fn, Header: fn } 这样的对象
+if (App && typeof App === "object" && !Array.isArray(App)) {
+  App = App.App || App.default || Object.values(App).find(v => typeof v === "function");
+}
+// 或者从 module 中找命名导出
+if (typeof App !== "function") {
   for (const key of Object.keys(AppModule)) {
-    if (typeof AppModule[key] === "function") { App = AppModule[key]; break; }
+    const v = AppModule[key];
+    if (typeof v === "function") { App = v; break; }
+    if (v && typeof v === "object" && typeof v.default === "function") { App = v.default; break; }
   }
 }
 
 const el = document.getElementById("root");
 if (!el) throw new Error("root not found");
 const root = createRoot(el);
-if (!App) throw new Error("No component found in " + Object.keys(AppModule).join(", "));
+if (!App) {
+  const keys = Object.keys(AppModule);
+  const types = keys.map(k => k + ":" + typeof AppModule[k]).join(", ");
+  throw new Error("App component not found. Exports: " + types + ". Use 'export default function App()' in App.tsx");
+}
 root.render(<React.StrictMode><App /></React.StrictMode>);`,
             ...normalizedFiles,
           }}
